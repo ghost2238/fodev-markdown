@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>fodev.net - Markdown viewer</title>
+	<link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='style.css') }}">
+	<base href="{{ base_href }}">
+</head>
+<body>
+	<div id="content" style="width: 512px; height: 512px; min-height: 0;">
+		<p style="font-size: 20px;">Select project/documentation</p>
+		{% for project in projects %}
+			<a href="{{project.route_name}}" style="font-size: 26px; line-height: 32px;">{{project.display_name}}</a><br/>
+		{% endfor %}
+	</div>
+</body>
+</html>

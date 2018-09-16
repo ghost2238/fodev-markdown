@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project.display_name }}</title>
+	<link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='style.css') }}">
+	<base href="{{ base_href }}">
+</head>
+<body>
+	<div id="side">
+		<ul>
+			<h1>{{ project.display_name }}</h1>
+			{% for item in project.menu_items %}
+				<a href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
+			{% endfor %}
+		</ul>
+	</div>
+
+	<div id="content">
+		{{ html_content|safe }}
+	</div>
+</body>
+</html>
