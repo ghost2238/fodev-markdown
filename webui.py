@@ -31,7 +31,7 @@ def show_table(project_name, file=''):
         content = r.text
 
     html = markdown.markdown(content, extensions=[GithubFlavoredMarkdownExtension()])
-    return render_template('index.html', base_href=config.base_href, file=file, html_content=html, project=project)
+    return render_template('index.html', base_href=config.base_href, file=sanitized_file, html_content=html, project=project)
 
 @app.route("/")
 def show_index():

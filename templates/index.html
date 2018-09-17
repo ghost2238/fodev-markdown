@@ -9,17 +9,26 @@
 	<base href="{{ base_href }}">
 </head>
 <body>
-	<div id="side">
-		<ul>
-			<h1>{{ project.display_name }}</h1>
-			{% for item in project.menu_items %}
-				<a href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
-			{% endfor %}
-		</ul>
-	</div>
+	<div id="wrap">
+		<div id="side-wrap">
+			<div id="side">
+				<ul>
+					<h1 id="title">{{ project.display_name }}</h1>
+					{% for item in project.menu_items %}
+						<a {% if item.filename == file %} class="active" {% endif %} href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<div id="content-wrap">
+			<div id="content">
+					{{ html_content|safe }}
+			</div>
+		</div>
 
-	<div id="content">
-		{{ html_content|safe }}
 	</div>
+	<script>
+
+	</script>
 </body>
 </html>
