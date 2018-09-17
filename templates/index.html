@@ -14,7 +14,7 @@
 			<div id="side">
 				<ul>
 					<h1 id="title">{{ project.display_name }}</h1>
-					{% for item in project.menu_items %}
+					{% for item in project['items'] %}
 						<a {% if item.filename == file %} class="active" {% endif %} href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
 					{% endfor %}
 				</ul>

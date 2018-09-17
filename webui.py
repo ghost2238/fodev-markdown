@@ -9,21 +9,27 @@ import re
 
 app = Flask(__name__)
 
+def get_projects():
+    with open(config.base_path+'/content.json') as file:
+        content = json.load(file)
+    return content
+
 @app.route("/<project_name>")
 @app.route("/<project_name>/<file>")
-def show_table(project_name, file=''):
-    
-    if project_name not in config.projects:
-        return render_template('index.html')
-    
-    project = config.projects[project_name]
+def show_table(project_name, file=''):    
+    projects = get_projects()
+
+    if project_name not in projects:
+        return render_template('select.html', )
+
+    project = projects[project_name]
+    print(projects[project_name])
     if file is '':
-            file = project.menu_items[0].filename
-    
+        file = project['items'][0]['filename']
+
     sanitized_file = file.replace('..','')
-    if project.github_repo == None:
-        
-        with open(config.md_path+project.route_name+'/'+sanitized_file, 'r', ) as fp:
+    if 'github_repo' in project:
+        with open(config.md_path+project['route_name']+'/'+sanitized_file, 'r', ) as fp:
             content = ''.join(fp.readlines())
     else:
         url = 'https://raw.githubusercontent.com/'+project.github_repo+'/master/'+sanitized_file
@@ -35,4 +41,5 @@ def show_table(project_name, file=''):
 
 @app.route("/")
 def show_index():
-    return render_template('select.html', base_href=config.base_href, projects=config.projects.values())
+    projects = get_projects()
+    return render_template('select.html', base_href=config.base_href, projects=projects)
