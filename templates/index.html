@@ -10,7 +10,7 @@
 </head>
 <body>
 	<nav>
-		<div></div>
+		<div><h1 id="title">{{ project.display_name }}</h1></div>
 		<a href="">Documentation</a>
 		<a class="active">How to be bad GM</a>
 		<a href="">Secret source code</a>
@@ -20,7 +20,6 @@
 		<div id="side-wrap">
 			<div id="side">
 				<ul>
-					<h1 id="title">{{ project.display_name }}</h1>
 					{% for item in project['items'] %}
 						<a {% if item.filename == file %} class="active" {% endif %} href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
 					{% endfor %}
