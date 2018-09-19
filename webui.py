@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request
 from mdx_gfm import GithubFlavoredMarkdownExtension
 import requests
 import markdown
@@ -21,15 +21,28 @@ def show_table(project_name, page_route='', doc_route=''):
     projects = get_projects()
 
     if project_name not in projects:
-        return render_template('select.html', )
+        return show_projects_page()
 
     project = projects[project_name]
+
     if page_route is '':
-        page = project['pages'][0]
+        p = list(project['pages'])[0]
+        page_route = p
+        page = project['pages'][p]
     else:
-        page = project['pages'][page_route]
-    
+        if page_route in list(project['pages']):
+            page = project['pages'][page_route]
+        else:
+            return redirect('/'+project_name, code=302)
+        
+    if 'docs' not in page:
+        return show_error('No documents defined for page!')
+
     docs = page['docs']
+    if len(docs) == 0:
+        return redirect('/'+project_name, code=302)
+
+    doc = None
     if doc_route is '':
         # Take first document on page.
         doc = docs[0]
@@ -38,6 +51,11 @@ def show_table(project_name, page_route='', doc_route=''):
         for x in range(0,len(docs)):
             if doc_route == docs[x]['route']:
                 doc = docs[x]
+    
+    if doc is None:
+        return redirect('/'+project_name+'/'+page_route, code=302)
+
+    doc_route = doc['route']
 
     url = doc['url']
     url = url.replace('..','')
@@ -63,7 +81,17 @@ def show_table(project_name, page_route='', doc_route=''):
     return render_template('index.html', base_href=config.base_href, 
         selected_page=page, page_route=page_route, doc_route=doc_route, docs=docs, url=url, html_content=html, project=project)
 
-@app.route("/")
-def show_index():
+def show_projects_page():
     projects = get_projects()
     return render_template('select.html', base_href=config.base_href, projects=projects)
+
+@app.route("/")
+def show_index():
+    return show_projects_page()
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect('/')
+
+def show_error(error):
+    return render_template('error.html', error=error)

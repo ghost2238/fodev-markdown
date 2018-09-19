@@ -1,19 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>fodev.net - Markdown viewer</title>
-	<link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='style.css') }}">
-	<base href="{{ base_href }}">
-</head>
-<body style="display: flex; align-items: center;">
-	<div id="content" style="width: 512px; height: 512px; min-height: 0; background: #191919; border: 3px solid #111;">
-		<p style="font-size: 20px; text-align: center;">Select project/documentation</p>
-		{% for project in projects %}
-			<a href="{{ projects[project]['route_name'] }}" style="display: block; font-size: 26px; line-height: 32px; text-align: center;">{{ projects[project]['route_name'] }}</a><br/>
-		{% endfor %}
-	</div>
-</body>
-</html>
+{% extends 'base.html' %}
+	{% block header %}
+	<h1>{% block title %}fodev.net{% endblock %}</h1>
+	{% endblock %}
+	{% block body %}
+	<body style="display: flex; align-items: center;">
+		<div id="content" style="width: 512px; height: 512px; min-height: 0; background: #191919; border: 3px solid #111;">
+			<p style="font-size: 20px; text-align: center;">Select project/documentation</p>
+			{% for project in projects %}
+				<a href="{{ projects[project]['route_name'] }}" style="display: block; font-size: 26px; line-height: 32px; text-align: center;">{{ projects[project]['route_name'] }}</a><br/>
+			{% endfor %}
+		</div>
+	</body>
+	{% endblock %}

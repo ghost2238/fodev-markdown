@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block header %}
+	{% block title %}fodev.net - an error has occured{% endblock %}
+{% endblock %}
+{% block body %}
+<body style="display: flex; align-items: center;">
+	<div style="margin: auto;">
+		<img src="https://fodev.net/error/500.png" width="320" height="320" style="margin: auto; "/>
+		<p style="font-size: 32px;">{{ error }}</p>
+		<p style="font-size: 32px;"><a href="/">Click here to go back</a></p>
+	</div>
+</body>
+{% endblock %}
