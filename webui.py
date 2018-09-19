@@ -9,6 +9,9 @@ import re
 
 app = Flask(__name__)
 
+def base_redirect(url):
+    return redirect(config.base_href+url, code=302)
+
 def get_projects():
     with open(config.base_path+'/content.json') as file:
         content = json.load(file)
@@ -26,21 +29,22 @@ def show_table(project_name, page_route='', doc_route=''):
     project = projects[project_name]
 
     if page_route is '':
-        p = list(project['pages'])[0]
-        page_route = p
-        page = project['pages'][p]
+        for p in list(project['pages']):
+            if 'docs' in project['pages'][p] and len(project['pages'][p]['docs']) > 0:
+                page_route = p
+                page = project['pages'][p]
     else:
         if page_route in list(project['pages']):
             page = project['pages'][page_route]
         else:
-            return redirect('/'+project_name, code=302)
+            return base_redirect(project_name)
         
     if 'docs' not in page:
         return show_error('No documents defined for page!')
 
     docs = page['docs']
     if len(docs) == 0:
-        return redirect('/'+project_name, code=302)
+        return base_redirect(project_name)
 
     doc = None
     if doc_route is '':
@@ -53,7 +57,7 @@ def show_table(project_name, page_route='', doc_route=''):
                 doc = docs[x]
     
     if doc is None:
-        return redirect('/'+project_name+'/'+page_route, code=302)
+        return base_redirect(project_name+'/'+page_route)
 
     doc_route = doc['route']
 
@@ -91,7 +95,7 @@ def show_index():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return redirect('/')
+    return base_redirect('')
 
 def show_error(error):
     return render_template('error.html', error=error)
