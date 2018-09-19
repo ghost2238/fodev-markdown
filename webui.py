@@ -82,6 +82,8 @@ def show_table(project_name, page_route='', doc_route=''):
         content = r.text
 
     html = markdown.markdown(content, extensions=[GithubFlavoredMarkdownExtension()])
+    html = html.replace(':heavy_check_mark:', u"\u2714")
+
     return render_template('index.html', base_href=config.base_href, 
         selected_page=page, page_route=page_route, doc_route=doc_route, docs=docs, url=url, html_content=html, project=project)
 

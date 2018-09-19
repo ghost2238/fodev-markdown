@@ -8,7 +8,8 @@ html, body {
 	color: #8c8c8c;
 	overflow-x: hidden;
 }
-    
+
+/* Tag styles */
 a, hr {
 	transition-timing-function: ease-out;
 	transition: 0.8s;
@@ -28,6 +29,110 @@ a:hover {
 	color: #b7cce2;
 }
 
+code {
+	background: #111;
+	padding: 3px;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-left: 3p;
+	border-radius: 3px;
+	border: 1px solid #333;
+}
+
+hr {
+	border: 0;
+	border-bottom:  1px solid #8e9eae;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+	height: 48px;
+	background: #333;
+}
+
+nav a {
+	text-decoration: none;
+    height: 24px;
+	border: 1px solid #2b2b2b;
+	border-bottom: 3px solid #444;
+	padding-left: 25px !important;  /* TODO: Common class for nav a and ul a, after that remove this !important crap */
+    padding-right: 25px !important;
+	float: left;
+}
+
+nav a.active {
+	border-bottom: 3px solid #eee;
+}
+
+nav a:hover {
+	text-decoration: none;
+	cursor: pointer;
+}
+
+nav a:hover:not(.active) {
+	border-bottom-color:  #777;
+}
+
+/* Filler */ 
+nav div {
+    height: 30px;
+    width: 231px;
+    float: left;
+}
+
+/* Table style */
+table {
+	border-collapse: collapse;
+	margin: 25px;
+}
+
+td, th {
+	padding: 6px 13px;
+	border: 1px solid #676767;
+	color: #bbb;
+}
+
+th {
+	line-height: 34px;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+tr:nth-child(even) {
+	background: #333;
+}
+
+tr:nth-child(odd) {
+	background: #222;
+}
+
+table thead tr {
+	background: #333 !important;
+}
+/* Table style end */
+
+/* id selectors */
+#content {
+	display: block;
+	overflow: hidden;
+	width: 95%;
+	text-align: left;
+	padding-right: 75px;
+	padding-right: 50px;
+	margin: 0 auto;	
+	margin-top: 15px;
+}
+
+#content-wrap {
+	padding: 0;
+    margin-bottom: 0;
+	margin-left: 25px;
+	display: flex;
+	width: 100%;
+}
+
 #side ul li {
 	display: block;
 }
@@ -39,29 +144,6 @@ a:hover {
 #side ul a:hover:not(.active), nav a {
 	background: #111;
 	color: #dee7f1;
-}
-
-hr {
-	border: 0;
-	border-bottom:  1px solid #8e9eae;
-}
-
-code {
-	background: #111;
-	padding: 3px;
-	padding-left: 5px;
-	padding-right: 5px;
-	margin-left: 3p;
-	border-radius: 3px;
-	border: 1px solid #333;
-}
-
-nav {
-    position: fixed;
-    top: 0;
-    width: 100%;
-	height: 48px;
-	background: #333;
 }
 
 #side, #side-wrap {
@@ -92,8 +174,6 @@ nav {
 }
 
 #side ul a, nav a {
-	/*border-top: 1px solid #2b2b2b;
-	border-bottom: 1px solid #2b2b2b;*/
 	vertical-align: middle;
 	text-decoration: none;
 	font-size: 18px;
@@ -101,15 +181,14 @@ nav {
 	text-align: center;
 }
 
-nav a.active {
-	border-bottom: 3px solid #eee;
+#side a, #navigation a {
+	font-size: 16px;
+    display: block;
+    line-height: 24px;
 }
 
-/* Filler */ 
-nav div {
-    height: 30px;
-    width: 231px;
-    float: left;
+#side-wrap {
+    height: 100%;
 }
 
 #title {
@@ -118,29 +197,6 @@ nav div {
     margin: 0;
     vertical-align: middle;
     line-height: 48px;
-}
-
-nav a {
-	text-decoration: none;
-    height: 24px;
-	border: 1px solid #2b2b2b;
-	border-bottom: 3px solid #444;
-	padding-left: 25px;
-    padding-right: 25px;
-	float: left;
-}
-
-nav a:hover {
-	text-decoration: none;
-	cursor: pointer;
-}
-
-nav a:hover:not(.active) {
-	border-bottom-color:  #777;
-}
-
-#side-wrap {
-    height: 100%;
 }
 
 #wrap {
@@ -152,58 +208,4 @@ nav a:hover:not(.active) {
 	border-left: 3px solid #2b2b2b;
 	border-right: 3px solid #2b2b2b;	
 	background: #191919;
-}
-
-#side a, #navigation a {
-	font-size: 16px;
-    display: block;
-    line-height: 24px;
-}
-
-#content-wrap {
-	padding: 0;
-    margin-bottom: 0;
-	margin-left: 25px;
-	display: flex;
-	width: 100%;
-}
-
-#content {
-	display: block;
-	overflow: hidden;
-	width: 95%;
-	text-align: left;
-	padding-right: 75px;
-	padding-right: 50px;
-	margin: 0 auto;	
-	/*padding-left: 50px;*/
-	margin-top: 15px;
-}
-
-#content table {
-	width: 100%;
-	color: #8c8c8c;
-	text-align: left;
-	border-collapse: collapse;
-	margin-left: 20px;
-}
-
-#content table thead tr {
-	font-weight: bold;
-}
-
-#content table tbody tr {
-	border-bottom: 1px solid #666;
-}
-
-#content table tbody td {
-	padding: 5px;
-}
-
-#content th {
-	text-align: left;
-	color: #8E9EAE;	
-	line-height: 34px;
-	font-size: 1.2em;
-	font-weight: bold;
 }
