@@ -11,17 +11,17 @@
 <body>
 	<nav>
 		<div><h1 id="title">{{ project.display_name }}</h1></div>
-		<a href="">Documentation</a>
-		<a class="active">How to be bad GM</a>
-		<a href="">Secret source code</a>
-		<a href="">Is there more?</a>
+		{% for p in project['pages'] %}
+		<a {% if p == page_route %} class="active" {% endif %} href="{{project['route_name']}}/{{p}}">{{ project['pages'][p]['name'] }}</a>
+		{% endfor %}
 	</nav>
 	<div id="wrap">
 		<div id="side-wrap">
 			<div id="side">
 				<ul>
-					{% for item in project['items'] %}
-						<a {% if item.filename == file %} class="active" {% endif %} href="{{project.route_name}}/{{item.filename}}">{{ item.title }}</a>
+					{% for doc in docs %}
+						<a {% if doc.route == doc_route %} class="active" {% endif %} 
+						href="{{project['route_name']}}/{{page_route}}/{{doc.route}}">{{ doc.title }}</a>
 					{% endfor %}
 				</ul>
 			</div>
