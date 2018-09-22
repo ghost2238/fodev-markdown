@@ -7,7 +7,7 @@
 		<div id="content" style="width: 512px; height: 512px; min-height: 0; background: #191919; border: 3px solid #111;">
 			<p style="font-size: 20px; text-align: center;">Select project/documentation</p>
 			{% for project in projects %}
-				<a href="{{ projects[project]['route_name'] }}" style="display: block; font-size: 26px; line-height: 32px; text-align: center;">{{ projects[project]['route_name'] }}</a><br/>
+				<a href="{{ project.route_name }}" style="display: block; font-size: 26px; line-height: 32px; text-align: center;">{{ project.display_name }}</a><br/>
 			{% endfor %}
 		</div>
 	</body>

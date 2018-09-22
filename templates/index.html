@@ -6,8 +6,8 @@
 	<body>
 		<nav>
 			<div><h1 id="title">{{ project.display_name }}</h1></div>
-			{% for p in project['pages'] %}
-			<a {% if p == page_route %} class="active" {% endif %} href="{{project['route_name']}}/{{p}}">{{ project['pages'][p]['name'] }}</a>
+			{% for p in project.pages %}
+			<a {% if p.route == page.route %} class="active" {% endif %} href="{{project.route_name}}/{{p.route}}">{{ p.name }}</a>
 			{% endfor %}
 		</nav>
 		<div id="wrap">
@@ -16,7 +16,7 @@
 					<ul>
 						{% for doc in docs %}
 							<a {% if doc.route == doc_route %} class="active" {% endif %} 
-							href="{{project['route_name']}}/{{page_route}}/{{doc.route}}">{{ doc.title }}</a>
+							href="{{project.route_name}}/{{page.route}}/{{doc.route}}">{{ doc.title }}</a>
 						{% endfor %}
 					</ul>
 				</div>
