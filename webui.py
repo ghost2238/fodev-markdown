@@ -23,30 +23,18 @@ def display_page(project_name, page_route='', doc_route=''):
 
     # Try to get page by route if it is defined
     # otherwise get the first page.
-    page = None
-    if page_route is '':
-        page = project.get_pages()[0]
-    else:
-        page = project.get_page(page_route)
-
+    page = project.get_page(page_route)
     if page == None:
         return show_projects_page()
         
     # If the page has no documents, try to fetch first page with documents
     # If not, redirect to project page.
     if page.has_documents() is False:
-        for p in project.get_pages():
-            if p.has_documents():
-                page = p
-        if page == None:
-            return show_projects_page()
+        page = project.get_page_with_docs()
+    if page == None:
+        return show_projects_page()
 
-    doc = None
-    if doc_route is '':
-        doc = page.documents[0]
-    else:
-        doc = page.get_document(doc_route)
-
+    doc = page.get_document(doc_route)
     if doc == None:
         return show_projects_page()
 
