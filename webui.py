@@ -8,29 +8,35 @@ app = Flask(__name__)
 def base_redirect(url):
     return redirect(config.base_href+url, code=302)
 
-@app.route("/<project_name>")
-@app.route("/<project_name>/<page_route>")
-@app.route("/<project_name>/<page_route>/<doc_route>")
-def display_page(project_name, page_route='', doc_route=''):    
+@app.route("/<project_route>")
+@app.route("/<project_route>/<page_route>")
+@app.route("/<project_route>/<page_route>/<doc_route>")
+def display_page(project_route, page_route='', doc_route=''):    
     Data.load()
 
-    project = Data.get_project(project_name)
+    project = Data.get_project(project_route)
+    print(project)
     if project is None:
         return show_projects_page()
 
     if project.has_pages() is False:
+        print('Project has no pages')
         return show_projects_page()
 
+
+    print('Found project')
     # Try to get page by route if it is defined
     # otherwise get the first page.
     page = project.get_page(page_route)
     if page == None:
         return show_projects_page()
-        
+    
+    print('Found page')
     # If the page has no documents, try to fetch first page with documents
     # If not, redirect to project page.
     if page.has_documents() is False:
         page = project.get_page_with_docs()
+
     if page == None:
         return show_projects_page()
 

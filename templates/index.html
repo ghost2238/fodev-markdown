@@ -7,7 +7,7 @@
 		<nav>
 			<div><h1 id="title">{{ project.display_name }}</h1></div>
 			{% for p in project.pages %}
-			<a {% if p.route == page.route %} class="active" {% endif %} href="{{project.route_name}}/{{p.route}}">{{ p.name }}</a>
+			<a class="button{% if p.route == page.route %} active{% endif %}" href="{{project.route_name}}/{{p.route}}">{{ p.name }}</a>
 			{% endfor %}
 		</nav>
 		<div id="wrap">
@@ -15,8 +15,11 @@
 				<div id="side">
 					<ul>
 						{% for doc in docs %}
-							<a {% if doc.route == doc_route %} class="active" {% endif %} 
+							<a class="button{% if doc.route == doc_route %} active{% endif %}"
 							href="{{project.route_name}}/{{page.route}}/{{doc.route}}">{{ doc.title }}</a>
+							{% for sub in doc.subtitles %}
+							<span><a class="subtitle" href="{{project.route_name}}/{{page.route}}/{{doc.route}}{{ sub.url() }}">{{sub.title}}</a></span>
+							{% endfor %}
 						{% endfor %}
 					</ul>
 				</div>

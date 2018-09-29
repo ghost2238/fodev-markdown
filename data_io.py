@@ -13,13 +13,17 @@ class Store():
     # TODO: Cache to db and fetch from there if file hasn't been modified.
     @staticmethod
     def read(filename):
-        path = Store.base_path+'/'+filename
-        with open(path, 'r', ) as fp:
-            return ''.join(fp.readlines())
+        path = Store.base_path+filename
+        try:
+            with open(path, 'r', ) as fp:
+                return ''.join(fp.readlines())
+        except IOError as ex:
+            print("Unable to open file " + path)
+            print(ex)
 
     @staticmethod
     def read_markdown(filename):
-        return Store.read('/markdown/'+filename)
+        return Store.read('markdown/'+filename)
 
     @staticmethod
     def read_json(file):

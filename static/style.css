@@ -53,12 +53,6 @@ nav {
 }
 
 nav a {
-	text-decoration: none;
-    height: 24px;
-	border: 1px solid #2b2b2b;
-	border-bottom: 3px solid #444;
-	padding-left: 25px !important;  /* TODO: Common class for nav a and ul a, after that remove this !important crap */
-    padding-right: 25px !important;
 	float: left;
 }
 
@@ -137,15 +131,6 @@ table thead tr {
 	display: block;
 }
 
-#side ul a:not(.active) {
-	border-bottom: 1px solid #2b2b2b;
-}
-
-#side ul a:hover:not(.active), nav a {
-	background: #111;
-	color: #dee7f1;
-}
-
 #side, #side-wrap {
 	min-width: 225px;
 	max-width: 225px;
@@ -173,20 +158,6 @@ table thead tr {
     margin-bottom: 0;
 }
 
-#side ul a, nav a {
-	vertical-align: middle;
-	text-decoration: none;
-	font-size: 18px;
-	padding: 10px;
-	text-align: center;
-}
-
-#side a, #navigation a {
-	font-size: 16px;
-    display: block;
-    line-height: 24px;
-}
-
 #side-wrap {
     height: 100%;
 }
@@ -208,4 +179,42 @@ table thead tr {
 	border-left: 3px solid #2b2b2b;
 	border-right: 3px solid #2b2b2b;	
 	background: #191919;
+}
+
+/* Class selectors */
+.button {
+	text-decoration: none;
+	font-size: 18px;
+	padding: 10px;
+	font-size: 16px;
+    display: block;
+	line-height: 24px;
+	border: 1px solid #2b2b2b;
+	border-bottom: 3px solid #444;
+	padding-left: 25px !important;  /* TODO: Common class for nav a and ul a, after that remove this !important crap */
+    padding-right: 25px !important;
+}
+
+.button:hover {
+	text-decoration: none;
+}
+
+.button:not(.active) {
+	border-bottom: 1px solid #2b2b2b;
+}
+
+.button:hover:not(.active) {
+	background: #111;
+	color: #dee7f1;
+}
+
+.subtitle:hover {
+	text-decoration: none;
+}
+
+.subtitle {
+	line-height: 10px;
+    margin-left: 35px;
+	display: block;
+	color: white;
 }
