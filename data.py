@@ -6,6 +6,8 @@ import os
 from data_io import Store, Github
 
 def doc_parse_title(content):
+    if content is None:
+        return None
     for line in content.splitlines():
         if not line.startswith('#'):
             continue
@@ -55,12 +57,21 @@ class Document():
         self.title = title
         self.page_dir = page_dir
         self.project_dir = project_dir
-        self.route = route
+        self.route = route # also filename
         self.url = url
         self.parse_url(self.url)
         self.load_content()
         self.subtitles = []
         self.parse_subtitles()
+        self.parse_title()
+
+    # Parse the markdown document and look for the first heading ('#')
+    # This will be used as the title of the document.
+    # If we don't find any top-level heading, the filename will be the title.
+    def parse_title(self):
+        parsed_title = doc_parse_title(self.content)
+        if parsed_title != None:
+            self.title = parsed_title
 
     def parse_url(self, url):
         self.protocol = 'file'
@@ -204,28 +215,24 @@ class Project():
         if page_route is '':
             return self.pages[0]
         else:
-            for page in self.pages:
-                if page.route == page_route:
-                    return page
+            return self.get_page_by_route(page_route)
+
+    def get_page_by_route(self, page_route):
+        for page in self.pages:
+            if page.route == page_route:
+                return page
+
+    #def read_document_from_file(self, md_path)
 
     def read_documents_from_folder(self, path, dir):
         docs = []
         document_files = os.listdir(path+'/'+dir)
         for document_file in document_files:
             md_path = self.route_name+'/'+dir+'/'+document_file
-            content = Store.read_markdown(md_path)
+            #content = Store.read_markdown(md_path)
             (_, filename) = os.path.split(document_file)
-
-            # Parse the markdown document and look for the first heading ('#')
-            # This will be used as the title of the document.
-            # If we don't find any top-level heading, the filename will be the title.
-            title = filename
-            parsed_title = doc_parse_title(content)
-            if parsed_title != None:
-                title = parsed_title
-            
-            doc = Document(title, filename, self.route_name, dir, document_file)
-            doc.content = content
+            doc = Document(filename, filename, self.route_name, dir, document_file)
+            #doc.content = content
             docs.append(doc)
         return docs
 
@@ -235,33 +242,38 @@ class Project():
         if not os.path.exists(path):
             return
         dir_contents = os.listdir(path)
-        for dir in dir_contents:
-            if not os.path.isdir(path+'/'+dir):
+        for obj in dir_contents:
+            if not os.path.isdir(path+'/'+obj):
+                # If we automap to a page, root objects can go there.
+                if self.automap_all_to != '':
+                    mapped_page = self.get_page_by_route(self.automap_all_to)
+                    doc = Document(obj, obj, self.route_name, '', obj)
+                    mapped_page.documents.append(doc)
                 continue
 
+
             # Get all documents in the folder
-            docs = self.read_documents_from_folder(path, dir)
+            docs = self.read_documents_from_folder(path, obj)
             # print(docs)            
 
             matched_page = None
             # All documents found goes to this page.
             if self.automap_all_to != '':
                 for page in self.pages:
-                    if page.route == dir:
+                    if page.route == obj:
                         matched_page = page
             else:
                 # See if we can find a matching page with the same route as dirname
                 # to add the documents to
                 # TODO: pages with same name in different parts of directory tree.
                 for page in self.pages:
-                    if page.route == dir:
+                    if page.route == obj:
                         matched_page = page
-                #if self.
+
                 # Create new page with name of dir. 
                 if matched_page is None:
-                    matched_page = Page(dir, dir)
+                    matched_page = Page(obj, obj)
                     self.pages.append(matched_page)
 
-            print(matched_page)
             for d in docs:
                 matched_page.documents.append(d)

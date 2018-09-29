@@ -18,7 +18,7 @@
 							<a class="button{% if doc.route == doc_route %} active{% endif %}"
 							href="{{project.route_name}}/{{page.route}}/{{doc.route}}">{{ doc.title }}</a>
 							{% for sub in doc.subtitles %}
-							<span><a class="subtitle" href="{{project.route_name}}/{{page.route}}/{{doc.route}}{{ sub.url() }}">{{sub.title}}</a></span>
+							<div><a class="subtitle" href="{{project.route_name}}/{{page.route}}/{{doc.route}}{{ sub.url() }}">{{sub.title}}</a></div>
 							{% endfor %}
 						{% endfor %}
 					</ul>
