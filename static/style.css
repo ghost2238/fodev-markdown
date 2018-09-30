@@ -145,6 +145,7 @@ table thead tr {
 	margin-right: 0;
 	min-height: 250px;
 	position: fixed;
+	overflow-y: overlay;
 }
 
 #side ul {
@@ -171,26 +172,25 @@ table thead tr {
 }
 
 #wrap {
+	background: #191919;
+	border-left: 3px solid #2b2b2b;
+	border-right: 3px solid #2b2b2b;	
 	display: flex;
 	padding-top: 48px;
 	width: 100%;
 	min-height: 100%;
 	margin: auto;
-	border-left: 3px solid #2b2b2b;
-	border-right: 3px solid #2b2b2b;	
-	background: #191919;
 }
 
 /* Class selectors */
 .button {
-	text-decoration: none;
-	font-size: 18px;
-	padding: 10px;
-	font-size: 16px;
-    display: block;
-	line-height: 24px;
 	border: 1px solid #2b2b2b;
 	border-bottom: 3px solid #444;
+	display: block;
+	font-size: 18px;
+	line-height: 24px;
+	text-decoration: none;
+	padding: 10px;
 	padding-left: 25px !important;  /* TODO: Common class for nav a and ul a, after that remove this !important crap */
     padding-right: 25px !important;
 }
@@ -212,9 +212,46 @@ table thead tr {
 	text-decoration: none;
 }
 
+/* Container for subtitles */
+.subtitles {
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
 .subtitle {
+	display: block;
 	line-height: 30px;
     margin-left: 35px;
-	display: block;
-	color: white;
+	color: #aaa;
+    opacity: 0.75;
+}
+
+.subtitle:hover {
+	opacity: 1.0;
+}
+
+.subtitle.selected {
+	color: #fff;
+	opacity: 1.0;
+}
+
+.subtitle.selected:before {
+	opacity: 1.0;
+}
+
+.sub-h3 {
+	margin-left: 45px;
+	font-size: 14px;
+}
+
+.sub-h4 {
+	margin-left: 56px;
+	font-size: 12px;
+}
+
+.sub-h3:before, .sub-h4:before {
+	content:url('nuclear16x16.png');
+	margin-top: 10px;
+	margin-right: 5px;
+	opacity: 0.0;
 }

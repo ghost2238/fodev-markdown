@@ -1,3 +1,4 @@
 #!/usr/bin/python3
-md_path   = ''
-base_href = ''
+base_path = ''
+base_href = '/'
+content_path = base_path + ''

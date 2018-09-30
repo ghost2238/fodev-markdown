@@ -7,13 +7,13 @@ import requests
 class Store():
 
     @staticmethod 
-    def init(base_path,):
-        Store.base_path = base_path
+    def init(content_path):
+        Store.content_path = content_path
 
     # TODO: Cache to db and fetch from there if file hasn't been modified.
     @staticmethod
     def read(filename):
-        path = Store.base_path+filename
+        path = Store.file_path(filename)
         try:
             with open(path, 'r', ) as fp:
                 return ''.join(fp.readlines())
@@ -23,15 +23,24 @@ class Store():
 
     @staticmethod
     def read_markdown(filename):
-        return Store.read('markdown/'+filename)
+        return Store.read(filename)
 
     @staticmethod
     def read_json(file):
-        return json.loads(Store.read(file))
+        print('Loading ' + Store.file_path(file))
+        loaded = Store.read(file)
+        return json.loads(loaded)
+
+    # Get content path and add trailing slash if needed
+    @staticmethod
+    def file_path(filename):
+        if Store.content_path.endswith('/'):
+            return Store.content_path+filename
+        return Store.content_path+'/'+filename
 
     @staticmethod
     def absolute_path(filename):
-        return os.path.abspath(Store.base_path+'/'+filename)
+        return os.path.abspath(Store.content_path+'/'+filename)
 
 class Github():
     @staticmethod

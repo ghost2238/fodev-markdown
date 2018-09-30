@@ -3,7 +3,10 @@ import config
 import re
 import markdown
 import os
+import logging
 from data_io import Store, Github
+
+logging.basicConfig(filename='program.log',level=logging.DEBUG)
 
 def doc_parse_title(content):
     if content is None:
@@ -19,10 +22,15 @@ def doc_parse_title(content):
         return str.strip(line[1:])
     return None
 
+def linkify_text(text):
+    text = text.replace(' ','-').replace('(','').replace(')','')
+    text = text.lower()
+    return text
+
 class Data():
     @staticmethod
     def load():
-        Store.init(config.base_path)
+        Store.init(config.content_path)
 
     @staticmethod
     def get_projects():
@@ -32,8 +40,8 @@ class Data():
             for project_name in json:
                 projects.append(Project(project_name, json[project_name]))
         except IOError as ex:
-            print('Unable to open ' + Store.absolute_path('content.json'))
-            print(ex)
+            logging.error('Unable to open ' + Store.absolute_path('content.json'))
+            logging.error(ex)
         return projects
 
     @staticmethod
@@ -45,11 +53,20 @@ class Data():
         return None
 
 class Subtitle():
-    def __init__(self, title):
+    def __init__(self, title, tag):
         self.title = title
+        self.tag = tag
     # TODO: Strip lots of more characters...
     def url(self):
-        return '#'+self.title.replace(' ', '')
+        return '#'+linkify_text(self.title)
+
+    def css_class(self):
+        c = ['subtitle']
+        if self.tag == 'h3':
+            c.append('sub-h3')
+        if self.tag == 'h4':
+            c.append('sub-h4')
+        return ' '.join(c)
 
 class Document():
     def __init__(self, title, route, project_dir, page_dir, url):
@@ -85,10 +102,6 @@ class Document():
         if self.protocol == 'file':
             self.file = url
 
-    @staticmethod
-    def subtitle_url(subtitle):
-        return subtitle.replace(' ', '')
-
     def parse_subtitles(self):
         if self.content is None:
             return
@@ -98,17 +111,24 @@ class Document():
                 idx = line.index('##')
             except:
                 continue
-            # It's a h3, that's also ok, for now.
+            
             offset = 2
+            tag = 'h2'
             if line[idx+2] == '#':
                 offset = 3
+                tag = 'h3'
+            if line[idx+3] == '#':
+                offset = 4
+                tag = 'h4'
 
             # Let's assume rest of the line is just the title... TODO: strip formatting
-            self.subtitles.append(Subtitle(str.strip(line[idx+offset:])))
-        #print(self.subtitles)
+            self.subtitles.append(Subtitle(str.strip(line[idx+offset:]), tag))
 
     def path_to_file(self):
         return self.project_dir + '/' + self.page_dir + '/' + self.file
+
+    def has_subtitles(self):
+        return len(self.subtitles) > 0
 
     def load_content(self):
         if self.protocol == 'file':
@@ -116,27 +136,33 @@ class Document():
         #if self.protocol == 'github':
         #    self.content = Github.get_raw(self.repo, self.file)
 
+    # For links
+    def header_make_id(self, tag, html):
+        for match in re.findall("\<"+tag+"\>(.+?)\<\/"+tag+"\>", html):
+            id = linkify_text(match)
+            html = html.replace('<'+tag+'>'+ match + '</'+tag+'>', '<'+tag+' id="'+id+'">'+match+'</'+tag+'>')
+        return html
+
     def postprocess(self, html):
 
         # Yay... 
         # TODO: use a proper HTML parser to strip tags of all formatting.
-        print(html)
+        #print(html)
         #match = 'asd'
         #while match != None:
-        for match in re.findall("\<h2\>(.+?)\<\/h2\>", html):
-            id = match.replace(' ', '')
-            html = html.replace('<h2>'+ match + '</h2>', '<h2 id="'+id+'">'+match+'</h2>')
-        for match in re.findall("\<h3\>(.+?)\<\/h3\>", html):
-            id = match.replace(' ', '')
-            html = html.replace('<h3>'+ match + '</h3>', '<h3 id="'+id+'">'+match+'</h3>')
-        #html = re.sub(r"<h2></h2>", "" re.)
-
+        html = self.header_make_id('h2', html)
+        html = self.header_make_id('h3', html)
+        html = self.header_make_id('h4', html)
         return html.replace(':heavy_check_mark:', u"\u2714")
     
 
     def to_html(self):
         if self.content is None:
             self.load_content()
+        if self.content is None:
+            logging.error('Unable to retrieve any markdown content for ' + self.path_to_file())
+            return ''
+
         html = markdown.markdown(self.content, extensions=[GithubFlavoredMarkdownExtension()])
         return self.postprocess(html)
 
@@ -162,8 +188,7 @@ class Page():
                 return self.documents[0]
         for doc in self.documents:
             if doc.route == route_name:
-                print('returning ' + doc.route)
-                #print(doc.content)
+                logging.debug('Matched document for ' + doc.route)
                 return doc
 
     def get_documents(self):
@@ -222,24 +247,20 @@ class Project():
             if page.route == page_route:
                 return page
 
-    #def read_document_from_file(self, md_path)
-
     def read_documents_from_folder(self, path, dir):
         docs = []
         document_files = os.listdir(path+'/'+dir)
         for document_file in document_files:
-            md_path = self.route_name+'/'+dir+'/'+document_file
-            #content = Store.read_markdown(md_path)
             (_, filename) = os.path.split(document_file)
             doc = Document(filename, filename, self.route_name, dir, document_file)
-            #doc.content = content
             docs.append(doc)
         return docs
 
     # Build content from automapped directory
     def automap(self):
-        path = config.base_path+'/markdown/'+self.route_name+'/'
+        path = Store.file_path(self.route_name+'/')
         if not os.path.exists(path):
+            logging.error(path + ' don\'t exist, unable to automap.')
             return
         dir_contents = os.listdir(path)
         for obj in dir_contents:
@@ -250,7 +271,6 @@ class Project():
                     doc = Document(obj, obj, self.route_name, '', obj)
                     mapped_page.documents.append(doc)
                 continue
-
 
             # Get all documents in the folder
             docs = self.read_documents_from_folder(path, obj)

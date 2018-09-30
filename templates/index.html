@@ -13,15 +13,20 @@
 		<div id="wrap">
 			<div id="side-wrap">
 				<div id="side">
-					<ul>
+					<div>
 						{% for doc in docs %}
 							<a class="button{% if doc.route == doc_route %} active{% endif %}"
 							href="{{project.route_name}}/{{page.route}}/{{doc.route}}">{{ doc.title }}</a>
-							{% for sub in doc.subtitles %}
-							<div><a class="subtitle" href="{{project.route_name}}/{{page.route}}/{{doc.route}}{{ sub.url() }}">{{sub.title}}</a></div>
-							{% endfor %}
+							{% if doc.has_subtitles() %}
+							<div class="subtitles">
+								{% for sub in doc.subtitles %}
+								<div><a class="{{ sub.css_class() }}" href="{{project.route_name}}/{{page.route}}/{{doc.route}}{{ sub.url() }}">{{sub.title}}</a></div>
+								{% endfor %}
+							</div>
+							{% endif %}
 						{% endfor %}
-					</ul>
+					</div>
+					<div style="padding-top: 50px;"></div>
 				</div>
 			</div>
 			<div id="content-wrap">

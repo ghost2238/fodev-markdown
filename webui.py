@@ -2,6 +2,9 @@
 from flask import Flask, render_template, redirect, request
 from data import Data, Page
 import config
+import logging
+
+logging.basicConfig(filename='program.log',level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -15,23 +18,19 @@ def display_page(project_route, page_route='', doc_route=''):
     Data.load()
 
     project = Data.get_project(project_route)
-    print(project)
     if project is None:
         return show_projects_page()
 
     if project.has_pages() is False:
-        print('Project has no pages')
+        logging.error('Project ' + project.display_name + ' has no pages')
         return show_projects_page()
 
-
-    print('Found project')
     # Try to get page by route if it is defined
     # otherwise get the first page.
     page = project.get_page(page_route)
     if page == None:
         return show_projects_page()
     
-    print('Found page')
     # If the page has no documents, try to fetch first page with documents
     # If not, redirect to project page.
     if page.has_documents() is False:
