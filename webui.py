@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 from flask import Flask, render_template, redirect, request
-from data import Data, Page
+from src.data import Data, Page
 import config
 import logging
 
-logging.basicConfig(filename='program.log',level=logging.DEBUG)
+logging.basicConfig(filename=config.base_path+'program.log',level=logging.DEBUG)
 
 app = Flask(__name__)
 

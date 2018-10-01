@@ -1,206 +1,13 @@
-from mdx_gfm import GithubFlavoredMarkdownExtension
 import config
 import re
-import markdown
 import os
 import logging
-from data_io import Store, Github
-from html.parser import HTMLParser
+from src.html_utils import html_extract_text_element, markdown_to_html, html_parse_header, linkify_text
+from src.data_io import Store, Github
 
 logging.basicConfig(filename=config.base_path+'program.log',level=logging.DEBUG)
 
-def is_heading_tag(tag):
-    return tag == 'h1' or tag == 'h2' or tag == 'h3' or tag == 'h4' or tag == 'h5' or tag == 'h6'
-
-# TODO: Move HTML and markdown stuff...
-# TODO: Remove text as a constructor parameter
-class HTMLNode:
-    def __init__(self, tag, attrs, text):
-        self.tag = tag
-        self.attrs = attrs # list (attr, value)
-        self.text = text
-        self.children = []
-
-    def add_child(self, node):
-        node.parent = self
-        self.children.append(node)
-
-    def get_text(self):
-        text = ''
-        for ch in self.children:
-            if ch.tag == '' and ch.text != '':
-                text += ch.text
-            else:
-                text += ch.get_text()
-        return text
-
-    # Take a HTML node and call function for each node recursively.
-    def walk(self, func):
-        func(self)
-
-class Vars():
-    def __init__(self):
-        self.tag = ''
-        self.attrs = list()
-        self.text = ''
-        self.nodes = []
-
-# Stackbased conversion to nodetree with help of python's built-in html parser
-class ParseToTree(HTMLParser):
-    stack = None
-    # stack frame
-    vars = None
-
-    def __init__(self):
-        HTMLParser.__init__(self)
-        self.vars = Vars()
-        #self.vars.tag = 'body'
-        self.stack = []
-
-    def print_stack(self, msg):
-        print('>'*len(self.stack) +' '+msg)
-
-    def stack_push(self):
-        # self.print_stack('pushing stack')
-        self.stack.append(self.vars)
-        self.vars = Vars()
-
-    def stack_pop(self):
-        # self.print_stack('popping stack')
-        #self.stack_idx-=1
-        self.vars = self.stack.pop()
-
-    def handle_starttag(self, tag, attrs):
-        # self.print_stack('found <' + tag +'>')
-        print('"<'+tag+'>"')
-        if tag == 'br':
-            print('return')
-            return
-        self.stack_push()
-        self.vars.nodes = []
-        self.vars.tag = tag
-        self.vars.attrs = attrs
-
-    def handle_data(self, data):
-        # Text element
-        self.vars.nodes.append(HTMLNode('',(),data))
-
-    # TODO: Fix br handling
-    def handle_endtag(self, tag):
-        print('"</'+tag+'>"')
-        if tag == 'br':
-            self.vars.nodes.append(HTMLNode('br',(),''))
-            return
-            #self.vars.nodes.append(HTMLNode('br',(),''))
-        #    return
-        # self.print_stack('found </' + tag + '>')
-        node = HTMLNode(self.vars.tag, self.vars.attrs, '')
-        for child in self.vars.nodes:
-            # self.print_stack('adding ' + child.tag)
-            node.add_child(child)
-        self.stack_pop()
-        self.vars.nodes.append(node)
-
-    def get_result(self):
-        node = HTMLNode(self.vars.tag, self.vars.attrs, '')
-        for child in self.vars.nodes:
-            node.children.append(child)
-        return node
-
-# Walks a tree and writes html to a buffer. 
-class HTMLWriter():
-    def __init__(self):
-        self.buffer = ''
-        self.depth = 0
-
-    def walk(self, node):
-        #print(len(node.children))
-        #self.depth+=1
-        if node.tag == '' and node.text != '':
-            self.buffer += node.text
-            return
-        attr_strs = []
-        if node.tag != '':
-            self.buffer += '<'+node.tag
-            if len(node.attrs) > 0:
-                self.buffer += ' '
-            for a in node.attrs:
-                attr_strs.append(a[0]+'="'+a[1]+'"')
-            self.buffer += ' '.join(attr_strs)
-            self.buffer +='>'
-            if node.tag == 'ul':
-                self.buffer += '\n'
-        for c in node.children:
-            self.walk(c)
-        self.buffer +='</'+node.tag+'>'
-        if node.tag == 'code' or node.tag == 'em':
-            self.buffer += ''
-        elif node.tag == 'pre':
-            self.buffer += '\n\n'
-        else:
-            self.buffer += '\n'
-
-            
-        #if self.depth>3:
-        #    self.buffer +='\n'
-        #self.depth-=1
-
-def add_id_to_headings(node):
-    if is_heading_tag(node.tag) and node.tag != 'h1':
-        id = linkify_text(node.get_text())
-        node.attrs.append(('id', id))
-    for n in node.children:
-        add_id_to_headings(n)
-
-
-def html_tree_to_string(node):
-    writer = HTMLWriter()
-    writer.walk(node)
-    return writer.buffer
-
-def html_to_tree(html):
-    parser = ParseToTree()
-    print(html)
-    parser.feed(html)
-    return parser.get_result()
-
-# Parse text and tag info from some html, used to extract titles and subtitles
-class HeadingsParser(HTMLParser):
-    def __init__(self):
-        self.inside_heading = False
-        self.inside_tag = ''
-        self.text = ''
-        HTMLParser.__init__(self)
-
-    def handle_starttag(self, tag, attrs):
-        if is_heading_tag(tag):
-            self.inside_heading = True
-            self.inside_tag = tag
-
-    def handle_endtag(self, tag):
-        if is_heading_tag(tag):
-            self.inside_heading = False
-
-    def handle_data(self, data):
-        if self.inside_heading:
-            self.text += data
-
-
-def markdown_to_html(content):
-    return markdown.markdown(content, extensions=[GithubFlavoredMarkdownExtension()])
-
-def html_parse_header(html):
-    parser = HeadingsParser()
-    parser.feed(html)
-    result = {'tag': parser.inside_tag, 'text': parser.text }
-    return result
-
-def html_extract_text_element(html):
-    parser = HeadingsParser()
-    parser.feed(html)
-    print('extracted: ' + parser.text)
-    return parser.text
-
+# TODO: Use block extension instead?
 def doc_parse_title(content):
     if content is None:
         return None
@@ -211,16 +18,10 @@ def doc_parse_title(content):
         if line[1] == '#':
             continue
 
-        # Let's assume rest of the line is just the title... TODO: strip formatting
+        # Let's assume rest of the line is just the title...
         return html_extract_text_element(markdown_to_html(line))
 
     return None
-
-# TODO: Strip lots of more characters...
-def linkify_text(text):
-    text = text.replace(' ','-').replace('(','').replace(')','')
-    text = text.lower()
-    return text
 
 class Data():
     @staticmethod
@@ -325,12 +126,9 @@ class Document():
         #    self.content = Github.get_raw(self.repo, self.file)
 
     def postprocess(self, html):
-        node = html_to_tree(html)
-        node.walk(add_id_to_headings)
-        html = html_tree_to_string(node)
+        # TODO: Create an extension to replace github emotes to unicode symbols.
         return html.replace(':heavy_check_mark:', u"\u2714")
     
-
     def to_html(self):
         if self.content is None:
             self.load_content()
@@ -342,7 +140,7 @@ class Document():
         html = markdown_to_html(self.content)
         #print(html)
         processed = self.postprocess(html)
-        print(processed)
+        # print(processed)
         return processed
 
 class Page():
