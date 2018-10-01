@@ -1,9 +1,14 @@
-import config
-import re
-import os
+import json
 import logging
-from src.html_utils import html_extract_text_element, markdown_to_html, html_parse_header, linkify_text
-from src.data_io import Store, Github
+import os
+import os.path
+import glob
+import pickle
+import re
+import config
+
+from src.html_utils import (html_extract_text_element, html_parse_header,
+                            linkify_text, markdown_to_html)
 
 logging.basicConfig(filename=config.base_path+'program.log',level=logging.DEBUG)
 
@@ -23,31 +28,142 @@ def doc_parse_title(content):
 
     return None
 
-# Wrapper, called from various router files, like index.py to resolve routes.
+
+def file_path(filename):
+    if config.content_path.endswith('/'):
+        return config.content_path+filename
+    return config.content_path+'/'+filename
+
+def read_file_safe(filename):
+    path = file_path(filename)
+    try:
+        with open(path, 'r', ) as fp:
+            return ''.join(fp.readlines())
+    except IOError as ex:
+        print("Unable to open file " + path)
+        print(ex)
+
+
 class Data():
+
+    # Parsed content.json
+    parsed_content = None
+    cache_index = None
+
     @staticmethod
-    def load():
-        Store.init(config.content_path)
+    def get_content():
+        if Data.parsed_content is None:
+            print('Loading ' + file_path('content.json'))
+            content = read_file_safe('content.json')
+            content = json.loads(content)
+            Data.parsed_content = content
+        return Data.parsed_content
+
+    @staticmethod
+    def get_cache_index():
+        if Data.cache_index is None:
+            Data.cache_index = Data.unpickle_cache('cache.idx')
+        if Data.cache_index is None:
+            Data.cache_index = dict()
+        #print(Data.cache_index)
+        return Data.cache_index
 
     @staticmethod
     def get_projects():
         projects =[]
+        content = Data.get_content()
         try:
-            json = Store.read_json('content.json')
-            for project_name in json:
-                projects.append(Project(project_name, json[project_name]))
+            for project_name in content:
+                route = content[project_name]['route_name']
+                projects.append(Data.get_project(route))
         except IOError as ex:
-            logging.error('Unable to open ' + Store.absolute_path('content.json'))
+            logging.error('Unable to get projects.')
             logging.error(ex)
         return projects
 
     @staticmethod
-    def get_project(route):
-        projects = Data.get_projects()
-        for project in projects:
-            if project.route_name == route:
-                return project
+    def unpickle_cache(file):
+        path = config.base_path+'/cache/'+file
+        try:
+            file = open(path,'rb')
+            loaded = pickle.load(file)
+            return loaded
+        except IOError:
+            logging.error('Unable to unpickle cached file ' + path)
         return None
+    
+    @staticmethod
+    def pickle_cache(file, obj):
+        path = config.base_path+'/cache/'+file
+        try:
+            file = open(path,'wb')
+            pickle.dump(obj, file)
+        except IOError:
+            logging.error('Unable to save cache file ' + path)
+        return None
+
+    @staticmethod
+    def mtime_total(path):
+        if len(config.base_path) < 6:
+            raise ValueError('base_path looks invalid.')
+        
+        mtime_total = 0
+        #print('globbing: ' + path+'/**/*')
+        for obj in glob.iglob(path+'/**/*.md', recursive=True):
+            #print('f')
+            #print(obj)
+            mtime = os.path.getmtime(obj)
+            #print('mtime of ' + obj + ' is ' + str(mtime))
+            mtime_total+=mtime
+        return mtime_total
+
+    # Load from cache if it's there, otherwise just read as normal.
+    @staticmethod
+    def get_project(name):
+        print('loading ' + name)
+        name = name.replace('..', '')
+        # Load cache index
+        cache_index = Data.get_cache_index()
+        stale_cache = False
+        has_cache = False
+        v2 = Data.mtime_total(config.content_path+'/'+name)
+        
+        if name in cache_index:
+            has_cache = True
+            v1 = cache_index[name]
+            if v1 != v2:
+                stale_cache = True
+                # print('cache is stale')
+
+        project = None
+        if has_cache and not stale_cache:
+            project = Data.unpickle_cache(name)
+            #if project != None:
+                # print(name + ' loaded from cache')
+        if project != None:
+            return project
+        
+        # Parse project from file
+        content = Data.get_content()
+        for found_name in content:
+            route_name = content[found_name]['route_name']
+            if route_name == name:
+                project = Project(name, content[found_name])
+        if project is None:
+            return None
+
+        # load all stuff so we can cache it.
+        for p in project.pages:
+            for d in p.documents:
+                d.to_html()
+        # print(name + ' loaded from disk')
+
+        # Save to cache
+        # print('saving cache to disk')
+        Data.cache_index[name] = v2
+        Data.pickle_cache(name, project)
+        Data.pickle_cache('cache.idx', Data.cache_index)
+        return project
 
 class Subtitle():
     def __init__(self, title, tag):
@@ -68,6 +184,7 @@ class Subtitle():
 class Document():
     def __init__(self, title, route, project_dir, page_dir, url):
         self.content = None
+        self.output_html = None
         self.title = title
         self.page_dir = page_dir
         self.project_dir = project_dir
@@ -89,13 +206,6 @@ class Document():
 
     def parse_url(self, url):
         self.protocol = 'file'
-        #if url.find('://') != -1:
-            #spl = url.split('://')
-            #if spl[0] == 'github':
-            #    self.protocol = 'github'
-            #    last_slash = spl[1].rfind('/')
-            #    self.repo = spl[1][:last_slash] 
-            #    self.file = spl[1][last_slash:]
         if self.protocol == 'file':
             self.file = url
 
@@ -122,7 +232,7 @@ class Document():
 
     def load_content(self):
         if self.protocol == 'file':
-            self.content = Store.read_markdown(self.path_to_file())
+            self.content = read_file_safe(self.path_to_file())
         #if self.protocol == 'github':
         #    self.content = Github.get_raw(self.repo, self.file)
 
@@ -131,6 +241,10 @@ class Document():
         return html.replace(':heavy_check_mark:', u"\u2714")
     
     def to_html(self):
+        if self.output_html != None:
+            print('output already generated')
+            return self.output_html
+
         if self.content is None:
             self.load_content()
         if self.content is None:
@@ -140,9 +254,10 @@ class Document():
 
         html = markdown_to_html(self.content)
         #print(html)
-        processed = self.postprocess(html)
+        html = self.postprocess(html)
+        self.output_html = html
         # print(processed)
-        return processed
+        return html
 
 class Page():
     def __init__(self, name, route):
@@ -186,8 +301,8 @@ class Project():
 
     def __init__(self, name, json):
         self.name = name
-        self.assert_key('display_name', json)
-        self.assert_key('route_name', json)
+        #self.assert_key('display_name', json)
+        #self.assert_key('route_name', json)
         self.display_name = json['display_name']
         self.route_name = json['route_name']
         self.pages = []
@@ -201,8 +316,8 @@ class Project():
             self.automap()
         
 
-    def assert_key(self, key, json):
-        assert (key in json, key + ' is required for project ' + self.name)
+    #def assert_key(self, key, json):
+    #    assert (key in json, key + ' is required for project ' + self.name)
 
     def has_tools(self):
         return self.github_repo != ''
@@ -241,7 +356,7 @@ class Project():
 
     # Build content from automapped directory
     def automap(self):
-        path = Store.file_path(self.route_name+'/')
+        path = file_path(self.route_name+'/')
         if not os.path.exists(path):
             logging.error(path + ' don\'t exist, unable to automap.')
             return

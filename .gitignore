@@ -2,6 +2,7 @@
 config.py
 *.pyc
 content.json
+**/cache
 **/content
 *.log
 .vscode/launch.json

@@ -13,7 +13,6 @@ def base_redirect(url):
     return redirect(config.base_href+url, code=302)
 
 def bootstrap():
-    Data.load()
     Routing.init(config.base_path, config.base_href)
 
 @app.route("/<project_route>")
