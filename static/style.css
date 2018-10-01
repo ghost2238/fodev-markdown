@@ -45,11 +45,12 @@ hr {
 }
 
 nav {
+	background: #333;
+	border-bottom: #888 solid 2px;
     position: fixed;
     top: 0;
     width: 100%;
 	height: 48px;
-	background: #333;
 }
 
 nav a {
@@ -145,7 +146,7 @@ table thead tr {
 	margin-right: 0;
 	min-height: 250px;
 	position: fixed;
-	overflow-y: overlay;
+	overflow-y: auto;
 }
 
 #side ul {
@@ -160,7 +161,8 @@ table thead tr {
 }
 
 #side-wrap {
-    height: 100%;
+	height: 100%;
+	overflow-y: auto;
 }
 
 #title {
@@ -240,7 +242,7 @@ table thead tr {
 }
 
 .sub-h3 {
-	margin-left: 45px;
+	margin-left: 35px;
 	font-size: 14px;
 }
 
@@ -254,4 +256,26 @@ table thead tr {
 	margin-top: 10px;
 	margin-right: 5px;
 	opacity: 0.0;
+}
+
+.toolbar {
+    background: #3f3f3f;
+    border-top: #888 solid 2px;
+    border-bottom: #888 solid 2px;
+}
+
+/* Toolbar */
+.toolbar.icon {
+	width: 32px;
+    height: 32px;
+    margin-left: 10px;
+	margin-top: 5px;
+	border: 0;
+	background: transparent;
+	opacity: 0.75;
+}
+
+.toolbar.icon:hover {
+	opacity: 1;
+	filter: hue-rotate(30)
 }

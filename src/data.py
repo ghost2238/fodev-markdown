@@ -23,6 +23,7 @@ def doc_parse_title(content):
 
     return None
 
+# Wrapper, called from various router files, like index.py to resolve routes.
 class Data():
     @staticmethod
     def load():
@@ -181,6 +182,7 @@ class Project():
     route_name = ''
     use_automapping = False
     automap_all_to = ''
+    github_repo = ''
 
     def __init__(self, name, json):
         self.name = name
@@ -193,13 +195,17 @@ class Project():
             self.pages.append(Page.from_json(page, self.route_name, json['pages'][page]))
         if 'automap_all_to' in json:
             self.automap_all_to = json['automap_all_to']
-
+        if 'github_repo' in json:
+            self.github_repo = json['github_repo']
         if ('use_automapping' in json) and json['use_automapping']:
             self.automap()
         
 
     def assert_key(self, key, json):
         assert (key in json, key + ' is required for project ' + self.name)
+
+    def has_tools(self):
+        return self.github_repo != ''
 
     def has_pages(self):
         return len(self.pages) > 0

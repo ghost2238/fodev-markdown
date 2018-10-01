@@ -4,3 +4,4 @@ config.py
 content.json
 **/content
 *.log
+.vscode/launch.json

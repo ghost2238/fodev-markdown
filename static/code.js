@@ -47,7 +47,6 @@ function parseUrl(str)
 function jumpToId(id)
 {
     var subtitleEl = document.getElementById(id);
-    console.log(subtitleEl);
     var top = subtitleEl.offsetTop;
 
     // The entire point of this is that we adjust the scroll position with the offset below
@@ -107,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     docUrl = parseUrl(document.URL);
     // Run only x times every sec maybe? Could impact perf in a massive document.
     document.body.addEventListener("scroll", function(event) {
-        if(!isElementInViewport(currentHeadingElement)) {
+        if(currentHeadingElement != null && !isElementInViewport(currentHeadingElement)) {
             var el = getFirstVisibleHeading();
             if(el != null)
                 selectHeading(el.getAttribute('id'));
@@ -128,7 +127,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     if(docUrl.id != null) {
-        console.log('Jumping to id ' + docUrl.id);
         jumpToId(docUrl.id);
         selectHeading(docUrl.id);
     }
